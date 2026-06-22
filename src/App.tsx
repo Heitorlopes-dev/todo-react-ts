@@ -100,7 +100,11 @@ export function App() {
   ));
 
   function addTask(name: string) {
-    const newTask = { id: nanoid(), name, completed: false };
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      return;
+    }
+    const newTask = { id: nanoid(), name: trimmedName, completed: false };
     setTasks((prevTasks) => [...prevTasks, newTask]);
   }
 
