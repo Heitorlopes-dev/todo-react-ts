@@ -10,7 +10,7 @@ export function Form(props: FormProps) {
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setName(event.target.value);
-    if (error) {
+    if (error && event.target.value.trim()) {
       setError(null);
     }
   }
