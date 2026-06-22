@@ -218,7 +218,7 @@ export function TodoPage() {
               </div>
             ) : (
               
-              <div className="max-h-[400px] overflow-y-auto pr-1">
+              <div className="max-h-100 overflow-y-auto pr-1">
                 <ul
                 role="list"
                 className="space-y-4 mt-5 list-none p-0"
