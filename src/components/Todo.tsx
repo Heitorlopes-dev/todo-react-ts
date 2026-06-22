@@ -125,7 +125,7 @@ export function Todo(props: TodoProps) {
   );
 
   return (
-    <li className="p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col gap-4 w-full animate-in fade-in duration-300">
+    <li className="p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4 w-full animate-in fade-in">
       {isEditing ? editingTemplate : viewTemplate}
     </li>
   );
