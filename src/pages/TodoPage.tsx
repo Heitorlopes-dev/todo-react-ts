@@ -217,7 +217,9 @@ export function TodoPage() {
                 <p className="text-[1.4rem] text-slate-400">Buscando tarefas...</p>
               </div>
             ) : (
-              <ul
+              
+              <div className="max-h-[400px] overflow-y-auto pr-1">
+                <ul
                 role="list"
                 className="space-y-4 mt-5 list-none p-0"
                 aria-labelledby="list-heading"
@@ -230,6 +232,7 @@ export function TodoPage() {
                   </p>
                 )}
               </ul>
+              </div>
             )}
           </div>
         </CardContent>
