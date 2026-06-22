@@ -4,6 +4,8 @@ import { Todo } from './components/Todo';
 import { FilterButton } from './components/FilterButton';
 import { Form } from './components/Form';
 
+
+
 type Task = {
   id: string;
   name: string;
@@ -19,6 +21,7 @@ const FILTER_MAP = {
 const FILTER_NAMES = Object.keys(FILTER_MAP) as Array<keyof typeof FILTER_MAP>;
 
 export function App() {
+  
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
       const savedTasks = localStorage.getItem('todo-react-ts-tasks');
@@ -114,10 +117,10 @@ export function App() {
   }`;
 
   return (
-    <div className="todoapp stack-large">
-      <h1>Lista de Tarefas</h1>
+    <div className="bg-white shadow-[0_2px_4px_0_rgb(0,0,0,0.2),0_2.5rem_5rem_0_rgb(0,0,0,0.1)] my-8 mx-0 p-4 sm:p-16 relative space-y-10">
+      <h1 className="block m-0 mb-4 max-w-full text-center mx-auto">Lista de Tarefas</h1>
       <Form addTask={addTask} />
-      <div className="filters btn-group stack-exception">
+      <div className="flex justify-between gap-x-2 mt-5">
         {filterList}
       </div>
       <h2 id="list-heading" tabIndex={-1} ref={listHeadingRef}>
@@ -125,7 +128,7 @@ export function App() {
       </h2>
       <ul
         role="list"
-        className="todo-list stack-large stack-exception"
+        className="space-y-10 mt-5"
         aria-labelledby="list-heading"
       >
         {taskList}
