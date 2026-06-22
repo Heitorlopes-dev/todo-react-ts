@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { TodoPage } from './pages/TodoPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Toaster } from './components/ui/sonner';
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
+      <Toaster />
     </AuthProvider>
   );
 }

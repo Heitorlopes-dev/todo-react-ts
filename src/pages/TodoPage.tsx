@@ -15,6 +15,9 @@ import {
   doc,
   serverTimestamp,
 } from 'firebase/firestore';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 type Task = {
   id: string;
@@ -62,6 +65,7 @@ export function TodoPage() {
       },
       (error) => {
         console.error('Erro ao escutar tarefas no Firestore:', error);
+        toast.error('Erro de conexão ao carregar tarefas.');
         setLoadingTasks(false);
       }
     );
@@ -85,8 +89,10 @@ export function TodoPage() {
         await updateDoc(taskDocRef, {
           completed: !task.completed,
         });
+        toast.success(task.completed ? 'Tarefa marcada como ativa' : 'Tarefa concluída com sucesso!');
       } catch (error) {
         console.error('Erro ao atualizar status da tarefa:', error);
+        toast.error('Erro ao alterar status da tarefa.');
       }
     }
   }
@@ -96,8 +102,10 @@ export function TodoPage() {
     const taskDocRef = doc(db, 'users', user.uid, 'tasks', id);
     try {
       await deleteDoc(taskDocRef);
+      toast.success('Tarefa excluída!');
     } catch (error) {
       console.error('Erro ao remover tarefa:', error);
+      toast.error('Erro ao excluir tarefa.');
     }
   }
 
@@ -110,8 +118,10 @@ export function TodoPage() {
       await updateDoc(taskDocRef, {
         name: trimmedName,
       });
+      toast.success('Tarefa renomeada!');
     } catch (error) {
       console.error('Erro ao editar tarefa:', error);
+      toast.error('Erro ao salvar alteração.');
     }
   }
 
@@ -127,8 +137,20 @@ export function TodoPage() {
         completed: false,
         createdAt: serverTimestamp(),
       });
+      toast.success('Tarefa adicionada!');
     } catch (error) {
       console.error('Erro ao criar tarefa:', error);
+      toast.error('Erro ao adicionar tarefa.');
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logOut();
+      toast.success('Você saiu da sua conta.');
+    } catch (error) {
+      console.error('Erro ao sair da conta:', error);
+      toast.error('Erro ao fazer logout.');
     }
   }
 
@@ -159,52 +181,59 @@ export function TodoPage() {
   }`;
 
   return (
-    <div className="bg-[whitesmoke] min-h-screen py-8 px-4 flex flex-col items-center">
-      <div className="bg-white shadow-[0_2px_4px_0_rgb(0,0,0,0.2),0_2.5rem_5rem_0_rgb(0,0,0,0.1)] w-full max-w-2xl p-6 sm:p-16 relative space-y-10">
-        <div className="flex justify-between items-center border-b pb-6 border-gray-200">
+    <div className="bg-linear-to-br from-slate-900 via-slate-800 to-indigo-950 min-h-screen py-12 px-4 flex flex-col items-center">
+      <Card className="w-full max-w-6xl border-slate-700/50 bg-slate-900/90 text-white shadow-2xl backdrop-blur-md animate-in fade-in duration-500 p-2 sm:p-6">
+        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-6 border-slate-800 gap-4">
           <div>
-            <h1 className="text-[2.8rem] font-bold text-[#4d4d4d]">Lista de Tarefas</h1>
-            <p className="text-[1.4rem] text-gray-500">{user?.email}</p>
+            <CardTitle className="text-3xl font-extrabold bg-linear-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+              Minhas Tarefas
+            </CardTitle>
+            <p className="text-[1.4rem] text-slate-400 font-medium mt-1">{user?.email}</p>
           </div>
-          <button
-            onClick={logOut}
-            className="border-2 border-red-600 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-5 py-2 text-[1.4rem] font-bold cursor-pointer transition-all capitalize"
+          <Button
+            onClick={handleLogout}
+            variant="destructive"
+            className="bg-[#ca3c3c] hover:bg-[#b03030] px-5 py-2 text-[1.3rem] font-bold cursor-pointer transition-colors capitalize"
           >
             Sair
-          </button>
-        </div>
+          </Button>
+        </CardHeader>
 
-        <Form addTask={addTask} />
+        <CardContent className="space-y-8 pt-8">
+          <Form addTask={addTask} />
 
-        <div className="flex justify-between gap-x-2 mt-5">
-          {filterList}
-        </div>
-
-        <h2 id="list-heading" tabIndex={-1} ref={listHeadingRef} className="text-[2rem] font-bold text-[#4d4d4d] outline-none">
-          {headingText}
-        </h2>
-
-        {loadingTasks ? (
-          <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-black border-t-transparent"></div>
-            <p className="text-[1.4rem] text-gray-500">Buscando tarefas...</p>
+          <div className="flex justify-between gap-x-2 mt-5">
+            {filterList}
           </div>
-        ) : (
-          <ul
-            role="list"
-            className="space-y-10 mt-5 list-none p-0"
-            aria-labelledby="list-heading"
-          >
-            {taskList.length > 0 ? (
-              taskList
+
+          <div className="space-y-4">
+            <h2 id="list-heading" tabIndex={-1} ref={listHeadingRef} className="text-[2rem] font-bold text-slate-200 outline-none">
+              {headingText}
+            </h2>
+
+            {loadingTasks ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
+                <p className="text-[1.4rem] text-slate-400">Buscando tarefas...</p>
+              </div>
             ) : (
-              <p className="text-center text-[1.6rem] text-gray-400 py-8">
-                Nenhuma tarefa encontrada neste filtro.
-              </p>
+              <ul
+                role="list"
+                className="space-y-4 mt-5 list-none p-0"
+                aria-labelledby="list-heading"
+              >
+                {taskList.length > 0 ? (
+                  taskList
+                ) : (
+                  <p className="text-center text-[1.6rem] text-slate-500 py-12 border border-dashed border-slate-800 rounded-xl">
+                    Nenhuma tarefa encontrada neste filtro.
+                  </p>
+                )}
+              </ul>
             )}
-          </ul>
-        )}
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

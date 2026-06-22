@@ -1,4 +1,7 @@
+import * as React from "react";
 import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type TodoProps = {
   id: string;
@@ -40,14 +43,14 @@ export function Todo(props: TodoProps) {
   }
 
   const editingTemplate = (
-    <form className="space-y-5 sm:space-y-[1.4rem] w-full" onSubmit={handleSubmit}>
-      <div>
-        <label className="visually-hidden" htmlFor={props.id}>
-          Novo nome para {props.name}
+    <form className="space-y-4 w-full" onSubmit={handleSubmit}>
+      <div className="space-y-2">
+        <label className="text-[1.4rem] font-semibold text-slate-700 dark:text-slate-300" htmlFor={props.id}>
+          Novo nome para <span className="italic font-normal">"{props.name}"</span>
         </label>
-        <input
+        <Input
           id={props.id}
-          className="border-2 border-[#565656] min-h-[4.4rem] px-3 py-1 w-full focus-visible:shadow-[inset_0_0_0_2px]"
+          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 h-11 text-[1.4rem] w-full focus-visible:ring-indigo-500"
           type="text"
           value={newName}
           onChange={handleChange}
@@ -55,9 +58,10 @@ export function Todo(props: TodoProps) {
         />
       </div>
       <div className="flex justify-between gap-x-3">
-        <button
+        <Button
           type="button"
-          className="border-2 border-[#4d4d4d] cursor-pointer px-4 py-3 capitalize flex-1"
+          variant="outline"
+          className="flex-1 h-10 text-[1.3rem] cursor-pointer"
           onClick={() => {
             setNewName(props.name);
             setEditing(false);
@@ -65,35 +69,41 @@ export function Todo(props: TodoProps) {
         >
           Cancelar
           <span className="visually-hidden">renomear {props.name}</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
-          className="border-2 border-[#4d4d4d] cursor-pointer px-4 py-3 capitalize flex-1 bg-black text-white"
+          className="flex-1 h-10 text-[1.3rem] bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
         >
           Salvar
           <span className="visually-hidden">novo nome para {props.name}</span>
-        </button>
+        </Button>
       </div>
     </form>
   );
 
   const viewTemplate = (
-    <div className="space-y-5 sm:space-y-[1.4rem] w-full">
-      <div className="c-cb">
+    <div className="space-y-4 w-full">
+      <div className="c-cb flex items-center">
         <input
           id={props.id}
           type="checkbox"
           defaultChecked={props.completed}
           onChange={() => props.toggleTaskCompleted(props.id)}
         />
-        <label className="todo-label" htmlFor={props.id}>
+        <label
+          className={`todo-label text-[1.6rem] font-medium transition-all ${
+            props.completed ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-200"
+          }`}
+          htmlFor={props.id}
+        >
           {props.name}
         </label>
       </div>
       <div className="flex justify-between gap-x-3">
-        <button
+        <Button
           type="button"
-          className="border-2 border-[#4d4d4d] cursor-pointer px-4 py-3 capitalize flex-1"
+          variant="outline"
+          className="flex-1 h-10 text-[1.3rem] border-slate-200 hover:bg-slate-50 text-slate-700 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
           onClick={() => {
             setNewName(props.name);
             setEditing(true);
@@ -101,19 +111,22 @@ export function Todo(props: TodoProps) {
           ref={editButtonRef}
         >
           Editar <span className="visually-hidden">{props.name}</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="border-2 border-[#bd2130] cursor-pointer px-4 py-3 capitalize flex-1 bg-[#ca3c3c] text-white"
+          variant="destructive"
+          className="flex-1 h-10 text-[1.3rem] bg-[#ca3c3c] hover:bg-[#b03030] text-white cursor-pointer"
           onClick={() => props.deleteTask(props.id)}
         >
           Excluir <span className="visually-hidden">{props.name}</span>
-        </button>
+        </Button>
       </div>
     </div>
   );
 
-  return <li className="flex flex-row flex-wrap">{isEditing ? editingTemplate : viewTemplate}</li>;
+  return (
+    <li className="p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col gap-4 w-full animate-in fade-in duration-300">
+      {isEditing ? editingTemplate : viewTemplate}
+    </li>
+  );
 }
-
-

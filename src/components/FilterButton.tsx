@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+
 type Filter = "Todas" | "Ativas" | "Completadas";
 
 type FilterButtonProps = {
@@ -8,12 +10,13 @@ type FilterButtonProps = {
 
 export function FilterButton(props: FilterButtonProps) {
   return (
-    <button
+    <Button
       type="button"
-      className={`border cursor-pointer px-4 py-3 capitalize flex-1 transition-colors ${
+      variant={props.isPressed ? "default" : "outline"}
+      className={`capitalize flex-1 h-10 text-[1.3rem] transition-all cursor-pointer ${
         props.isPressed
-          ? "border-[#4d4d4d] underline"
-          : "border-gray-300"
+          ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+          : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
       }`}
       aria-pressed={props.isPressed}
       onClick={() => props.setFilter(props.name)}
@@ -21,7 +24,6 @@ export function FilterButton(props: FilterButtonProps) {
       <span className="visually-hidden">Mostrar </span>
       <span>{props.name}</span>
       <span className="visually-hidden"> tarefas</span>
-    </button>
+    </Button>
   );
 }
-

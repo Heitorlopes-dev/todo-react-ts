@@ -1,4 +1,7 @@
+import * as React from "react";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 type FormProps = {
   addTask: (name: string) => void;
@@ -28,37 +31,38 @@ export function Form(props: FormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2 className="flex-[0_0_100%] m-0 text-center">
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <div className="flex flex-col gap-2">
         <label
           htmlFor="new-todo-input"
-          className="leading-[1.01567] font-light mb-4 p-3 text-center text-[1.9rem] sm:text-[2.4rem] inline-block w-full"
+          className="text-[1.6rem] font-semibold text-slate-700 dark:text-slate-300"
         >
-          Quais as tarefas atuais?
+          O que precisa ser feito?
         </label>
-      </h2>
-      <input
-        type="text"
-        id="new-todo-input"
-        className="border-2 border-black p-8 text-[1.9rem] sm:text-[2.4rem] inline-block w-full mb-4 focus-visible:border-[#4d4d4d] focus-visible:shadow-[inset_0_0_0_2px]"
-        name="text"
-        autoComplete="off"
-        value={name}
-        onChange={handleChange}
-      />
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            id="new-todo-input"
+            className="flex-1 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 h-12 text-[1.4rem] focus-visible:ring-indigo-500"
+            name="text"
+            autoComplete="off"
+            value={name}
+            onChange={handleChange}
+            placeholder="Adicione uma nova tarefa..."
+          />
+          <Button
+            type="submit"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 h-12 text-[1.4rem] transition-colors shadow-sm cursor-pointer"
+          >
+            Adicionar
+          </Button>
+        </div>
+      </div>
       {error && (
-        <div className="text-[#ca3c3c] text-[1.4rem] mt-2 mb-5 text-center font-bold">
+        <div className="text-red-500 text-[1.2rem] font-semibold animate-in fade-in duration-200">
           {error}
         </div>
       )}
-      <button
-        type="submit"
-        className="border-2 border-[#4d4d4d] cursor-pointer px-4 py-3 capitalize bg-black text-white text-[1.9rem] sm:text-[2.4rem] inline-block w-full"
-      >
-        Adicionar
-      </button>
     </form>
   );
 }
-
-
