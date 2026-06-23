@@ -1,22 +1,18 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  deleteUser,
   type User,
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-
-type AuthContextType = {
-  user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  logOut: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext } from './authContext';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -45,18 +41,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   }
 
+  async function updateDisplayName(name: string) {
+    if (!auth.currentUser) throw new Error('Nenhum usuário autenticado.');
+    await updateProfile(auth.currentUser, { displayName: name });
+    // Força re-render atualizando o estado com o objeto atualizado
+    setUser({ ...auth.currentUser });
+  }
+
+  async function updateUserPassword(currentPassword: string, newPassword: string) {
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.email) throw new Error('Nenhum usuário autenticado.');
+    // Re-autentica o usuário antes de alterar a senha (exigido pelo Firebase)
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+    await reauthenticateWithCredential(currentUser, credential);
+    await updatePassword(currentUser, newPassword);
+  }
+
+  async function deleteUserAccount(currentPassword: string) {
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.email) throw new Error('Nenhum usuário autenticado.');
+    // Re-autentica antes de excluir (exigido pelo Firebase)
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+    await reauthenticateWithCredential(currentUser, credential);
+    await deleteUser(currentUser);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, logOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        signIn,
+        signUp,
+        logOut,
+        updateDisplayName,
+        updateUserPassword,
+        deleteUserAccount,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
-
-// Hook personalizado para usar o contexto de auth em qualquer componente
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
-  }
-  return context;
 }

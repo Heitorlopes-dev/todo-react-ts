@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Todo } from '../components/Todo';
 import { FilterButton } from '../components/FilterButton';
 import { Form } from '../components/Form';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { db } from '../lib/firebase';
 import {
   collection,
@@ -35,6 +36,7 @@ const FILTER_NAMES = Object.keys(FILTER_MAP) as Array<keyof typeof FILTER_MAP>;
 
 export function TodoPage() {
   const { user, logOut } = useAuth();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<keyof typeof FILTER_MAP>('Todas');
   const [loadingTasks, setLoadingTasks] = useState(true);
@@ -188,15 +190,31 @@ export function TodoPage() {
             <CardTitle className="text-3xl font-extrabold bg-linear-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
               Minhas Tarefas
             </CardTitle>
-            <p className="text-[1.4rem] text-slate-400 font-medium mt-1">{user?.email}</p>
+            <p className="text-[1.4rem] text-slate-400 font-medium mt-1">
+              {user?.displayName ?? user?.email}
+            </p>
           </div>
-          <Button
-            onClick={handleLogout}
-            variant="destructive"
-            className="bg-[#ca3c3c] hover:bg-[#b03030] px-5 py-2 text-[1.3rem] font-bold cursor-pointer transition-colors capitalize"
-          >
-            Sair
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Profile button */}
+            <button
+              onClick={() => navigate('/profile')}
+              title="Meu perfil"
+              className="h-11 w-11 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-[1.4rem] shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-transform cursor-pointer select-none"
+            >
+              {(user?.displayName ?? user?.email ?? '?')
+                .split(/[\s@]+/)
+                .slice(0, 2)
+                .map((s: string) => s[0]?.toUpperCase() ?? '')
+                .join('')}
+            </button>
+            <Button
+              onClick={handleLogout}
+              variant="destructive"
+              className="bg-[#ca3c3c] hover:bg-[#b03030] px-5 py-2 text-[1.3rem] font-bold cursor-pointer transition-colors capitalize"
+            >
+              Sair
+            </Button>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-8 pt-8">
