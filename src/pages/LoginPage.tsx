@@ -52,7 +52,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-indigo-950 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl mx-auto border-slate-700/50 bg-slate-900/90 text-white shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="w-full max-h-full max-w-5xl mx-auto border-slate-700/50 bg-slate-900/90 text-white shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-2 text-center pt-8">
           <div className="mx-auto bg-linear-to-tr from-indigo-500 to-pink-500 h-12 w-12 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-2">
             <svg
@@ -80,7 +80,7 @@ export function LoginPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4 px-6 pb-6">
             <div className="space-y-1">
-              <label htmlFor="email" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label htmlFor="email" className="text-1xl font-semibold text-slate-300 uppercase tracking-wider h-20">
                 E-mail
               </label>
               <Input
@@ -91,12 +91,12 @@ export function LoginPage() {
                 required
                 autoComplete="email"
                 placeholder="nome@exemplo.com"
-                className="bg-slate-950/50 border-slate-700 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 h-10 text-sm"
+                className="bg-slate-950/50 border-slate-700 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 h-20 text-2xl"
               />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="password" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label htmlFor="password" className="text-1xl font-semibold text-slate-300 uppercase tracking-wider h-20">
                 Senha
               </label>
               <Input
@@ -107,7 +107,7 @@ export function LoginPage() {
                 required
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 placeholder="Sua senha secreta"
-                className="bg-slate-950/50 border-slate-700 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 h-10 text-sm"
+                className="bg-slate-950/50 border-slate-700 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 h-20 text-1xl"
               />
             </div>
           </CardContent>
@@ -116,7 +116,7 @@ export function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/25 h-10 text-sm cursor-pointer"
+              className="w-full bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/25 h-20 text-1xl cursor-pointer"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
