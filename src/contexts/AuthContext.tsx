@@ -7,11 +7,16 @@ import {
   updateProfile,
   updatePassword,
   reauthenticateWithCredential,
+  reauthenticateWithPopup,
   EmailAuthProvider,
+  GoogleAuthProvider,
   deleteUser,
+  signInWithPopup,
+  sendPasswordResetEmail,
   type User,
 } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 import { AuthContext } from './authContext';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -19,13 +24,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Observa mudanças de estado do usuário (login/logout)
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
-
-    // Cancela a assinatura quando o componente é desmontado
     return unsubscribe;
   }, []);
 
@@ -37,6 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await createUserWithEmailAndPassword(auth, email, password);
   }
 
+  async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    await signInWithPopup(auth, provider);
+  }
+
+  async function resetPassword(email: string) {
+    await sendPasswordResetEmail(auth, email);
+  }
+
   async function logOut() {
     await signOut(auth);
   }
@@ -44,25 +56,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function updateDisplayName(name: string) {
     if (!auth.currentUser) throw new Error('Nenhum usuário autenticado.');
     await updateProfile(auth.currentUser, { displayName: name });
-    // Força re-render atualizando o estado com o objeto atualizado
     setUser({ ...auth.currentUser });
   }
 
   async function updateUserPassword(currentPassword: string, newPassword: string) {
     const currentUser = auth.currentUser;
     if (!currentUser || !currentUser.email) throw new Error('Nenhum usuário autenticado.');
-    // Re-autentica o usuário antes de alterar a senha (exigido pelo Firebase)
     const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
     await reauthenticateWithCredential(currentUser, credential);
     await updatePassword(currentUser, newPassword);
   }
 
-  async function deleteUserAccount(currentPassword: string) {
+  function isGoogleUser(): boolean {
+    return auth.currentUser?.providerData.some(
+      (p) => p.providerId === 'google.com',
+    ) ?? false;
+  }
+
+  async function deleteUserAccount(currentPassword?: string) {
     const currentUser = auth.currentUser;
-    if (!currentUser || !currentUser.email) throw new Error('Nenhum usuário autenticado.');
-    // Re-autentica antes de excluir (exigido pelo Firebase)
-    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-    await reauthenticateWithCredential(currentUser, credential);
+    if (!currentUser) throw new Error('Nenhum usuário autenticado.');
+
+    // Re-authenticate based on provider
+    if (isGoogleUser()) {
+      const provider = new GoogleAuthProvider();
+      await reauthenticateWithPopup(currentUser, provider);
+    } else {
+      if (!currentPassword || !currentUser.email) {
+        throw new Error('Senha necessária para re-autenticação.');
+      }
+      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+      await reauthenticateWithCredential(currentUser, credential);
+    }
+
+    // Delete all user tasks before deleting account (F-21 compliance)
+    const tasksRef = collection(db, 'users', currentUser.uid, 'tasks');
+    const snapshot = await getDocs(tasksRef);
+    if (!snapshot.empty) {
+      const batch = writeBatch(db);
+      snapshot.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+    }
+
     await deleteUser(currentUser);
   }
 
@@ -73,10 +108,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         signIn,
         signUp,
+        signInWithGoogle,
+        resetPassword,
         logOut,
         updateDisplayName,
         updateUserPassword,
         deleteUserAccount,
+        isGoogleUser,
       }}
     >
       {children}

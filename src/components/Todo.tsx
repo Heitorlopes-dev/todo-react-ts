@@ -1,7 +1,7 @@
-import * as React from "react";
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type TodoProps = {
   id: string;
@@ -12,9 +12,10 @@ type TodoProps = {
   editTask: (id: string, newName: string) => void;
 };
 
-export function Todo(props: TodoProps) {
+export const Todo = memo(function Todo(props: TodoProps) {
+  const { id, name, completed, toggleTaskCompleted, deleteTask, editTask } = props;
   const [isEditing, setEditing] = useState(false);
-  const [newName, setNewName] = useState(props.name);
+  const [newName, setNewName] = useState('');
 
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const editFieldRef = useRef<HTMLInputElement>(null);
@@ -29,53 +30,69 @@ export function Todo(props: TodoProps) {
     wasEditing.current = isEditing;
   }, [isEditing]);
 
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setNewName(event.target.value);
-  }
+  }, []);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!newName.trim()) {
-      return;
-    }
-    props.editTask(props.id, newName);
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!newName.trim()) return;
+      editTask(id, newName);
+      setEditing(false);
+    },
+    [newName, editTask, id],
+  );
+
+  const handleStartEdit = useCallback(() => {
+    setNewName(name);
+    setEditing(true);
+  }, [name]);
+
+  const handleCancelEdit = useCallback(() => {
+    setNewName(name);
     setEditing(false);
-  }
+  }, [name]);
+
+  const handleToggle = useCallback(() => {
+    toggleTaskCompleted(id);
+  }, [toggleTaskCompleted, id]);
+
+  const handleDelete = useCallback(() => {
+    deleteTask(id);
+  }, [deleteTask, id]);
 
   const editingTemplate = (
     <form className="space-y-4 w-full" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <label className="text-[1.4rem] font-semibold text-slate-700 dark:text-slate-300" htmlFor={props.id}>
-          Novo nome para <span className="italic font-normal">"{props.name}"</span>
+        <label className="text-[1.4rem] font-bold text-white/80" htmlFor={id}>
+          Novo nome para <span className="italic font-normal text-white/60">"{name}"</span>
         </label>
         <Input
-          id={props.id}
-          className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 h-11 text-[1.4rem] w-full focus-visible:ring-indigo-500"
+          id={id}
+          className="bg-white/5 border-white/10 text-white placeholder-white/20 focus:border-emerald-500 focus:ring-emerald-500/20 focus-visible:ring-emerald-500/20 h-12 text-[1.4rem] w-full rounded-xl"
           type="text"
           value={newName}
           onChange={handleChange}
           ref={editFieldRef}
+          maxLength={500}
         />
       </div>
       <div className="flex justify-between gap-x-3">
         <Button
           type="button"
-          variant="outline"
-          className="flex-1 h-10 text-[1.3rem] cursor-pointer"
-          onClick={() => {
-            setNewName(props.name);
-            setEditing(false);
-          }}
+          className="flex-1 h-12 text-[1.3rem] bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white rounded-xl transition-all cursor-pointer"
+          onClick={handleCancelEdit}
         >
           Cancelar
-          <span className="visually-hidden">renomear {props.name}</span>
+          <span className="sr-only">renomear {name}</span>
         </Button>
         <Button
           type="submit"
-          className="flex-1 h-10 text-[1.3rem] bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
+          className="flex-1 h-12 text-[1.3rem] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl transition-all shadow-md shadow-emerald-900/30 cursor-pointer"
         >
           Salvar
-          <span className="visually-hidden">novo nome para {props.name}</span>
+          <span className="sr-only">novo nome para {name}</span>
         </Button>
       </div>
     </form>
@@ -85,48 +102,43 @@ export function Todo(props: TodoProps) {
     <div className="space-y-4 w-full">
       <div className="c-cb flex items-center">
         <input
-          id={props.id}
+          id={id}
           type="checkbox"
-          defaultChecked={props.completed}
-          onChange={() => props.toggleTaskCompleted(props.id)}
+          checked={completed}
+          onChange={handleToggle}
         />
         <label
           className={`todo-label text-[1.6rem] font-medium transition-all ${
-            props.completed ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-200"
+            completed ? 'line-through text-white/30' : 'text-white/90'
           }`}
-          htmlFor={props.id}
+          htmlFor={id}
         >
-          {props.name}
+          {name}
         </label>
       </div>
       <div className="flex justify-between gap-x-3">
         <Button
           type="button"
-          variant="outline"
-          className="flex-1 h-10 text-[1.3rem] border-slate-200 hover:bg-slate-50 text-slate-700 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
-          onClick={() => {
-            setNewName(props.name);
-            setEditing(true);
-          }}
+          className="flex-1 h-12 text-[1.3rem] bg-white/5 border border-white/10 text-emerald-400 hover:bg-white/10 hover:text-emerald-300 rounded-xl transition-all cursor-pointer"
+          onClick={handleStartEdit}
           ref={editButtonRef}
         >
-          Editar <span className="visually-hidden">{props.name}</span>
+          Editar <span className="sr-only">{name}</span>
         </Button>
         <Button
           type="button"
-          variant="destructive"
-          className="flex-1 h-10 text-[1.3rem] bg-[#ca3c3c] hover:bg-[#b03030] text-white cursor-pointer"
-          onClick={() => props.deleteTask(props.id)}
+          className="flex-1 h-12 text-[1.3rem] bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20 rounded-xl transition-all cursor-pointer"
+          onClick={handleDelete}
         >
-          Excluir <span className="visually-hidden">{props.name}</span>
+          Excluir <span className="sr-only">{name}</span>
         </Button>
       </div>
     </div>
   );
 
   return (
-    <li className="p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-4 w-full animate-in fade-in">
+    <li className="p-6 bg-white/2 hover:bg-white/4 border border-white/5 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col gap-4 w-full animate-in fade-in">
       {isEditing ? editingTemplate : viewTemplate}
     </li>
   );
-}
+});
