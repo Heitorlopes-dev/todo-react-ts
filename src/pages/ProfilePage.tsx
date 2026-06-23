@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Mail, ShieldCheck, Activity as ActivityIcon } from 'lucide-react';
 import { DisplayNameForm } from '@/components/profile/DisplayNameForm';
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 import { DeleteAccountSection } from '@/components/profile/DeleteAccountSection';
@@ -14,11 +14,11 @@ export function ProfilePage() {
   const googleUser = isGoogleUser();
 
   return (
-    <div className="min-h-screen bg-[#0f1f18] py-12 px-4 flex flex-col items-center">
+    <div className="min-h-screen bg-app-bg/30 py-12 px-4 flex flex-col items-center">
       <div className="w-full max-w-4xl space-y-8 animate-in fade-in duration-500">
         
         {/* Header Card */}
-        <Card className="border-white/10 bg-[#162720] text-white shadow-2xl rounded-2xl p-2 sm:p-6">
+        <Card className="border-white/10 bg-app-card text-white shadow-2xl rounded-2xl p-2 sm:p-6">
           <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-6 border-white/5 gap-4">
             <div className="flex items-center gap-4">
               <Button
@@ -37,6 +37,14 @@ export function ProfilePage() {
                 </p>
               </div>
             </div>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/activities')}
+              className="h-12 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white cursor-pointer gap-2"
+            >
+              <ActivityIcon className="h-5 w-5" />
+              <span className="text-[1.3rem] font-semibold">Histórico</span>
+            </Button>
           </CardHeader>
 
           <CardContent className="pt-8 space-y-8">

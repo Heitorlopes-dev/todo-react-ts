@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { TodoPage } from './pages/TodoPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ActivityPage } from './pages/ActivityPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Toaster } from './components/ui/sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -26,6 +27,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/activities"
+              element={
+                <ProtectedRoute>
+                  <ActivityPage />
                 </ProtectedRoute>
               }
             />

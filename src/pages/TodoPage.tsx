@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getUserInitials } from '@/lib/utils';
+import { Activity as ActivityIcon } from 'lucide-react';
 
 export function TodoPage() {
   const { user, logOut } = useAuth();
@@ -92,6 +93,13 @@ export function TodoPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/activities')}
+              title="Histórico de atividades"
+              className="h-11 w-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+            >
+              <ActivityIcon className="h-5 w-5" />
+            </button>
             <button
               onClick={() => navigate('/profile')}
               title="Meu perfil"

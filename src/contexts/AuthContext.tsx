@@ -18,6 +18,7 @@ import {
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { AuthContext } from './authContext';
+import { createActivityLog } from '../services/activity-service';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -32,17 +33,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function signIn(email: string, password: string) {
-    await signInWithEmailAndPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    await createActivityLog({
+      userId: cred.user.uid,
+      action: 'user_login',
+      category: 'auth',
+      description: 'Fez login no sistema',
+    }).catch(console.error);
   }
 
   async function signUp(email: string, password: string) {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await createActivityLog({
+      userId: cred.user.uid,
+      action: 'user_login',
+      category: 'auth',
+      description: 'Criou uma nova conta',
+    }).catch(console.error);
   }
 
   async function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithPopup(auth, provider);
+    const cred = await signInWithPopup(auth, provider);
+    await createActivityLog({
+      userId: cred.user.uid,
+      action: 'user_login',
+      category: 'auth',
+      description: 'Fez login com o Google',
+    }).catch(console.error);
   }
 
   async function resetPassword(email: string) {
@@ -50,6 +69,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logOut() {
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      await createActivityLog({
+        userId: uid,
+        action: 'user_logout',
+        category: 'auth',
+        description: 'Saiu da conta',
+      }).catch(console.error);
+    }
     await signOut(auth);
   }
 
@@ -57,6 +85,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth.currentUser) throw new Error('Nenhum usuário autenticado.');
     await updateProfile(auth.currentUser, { displayName: name });
     setUser({ ...auth.currentUser });
+    await createActivityLog({
+      userId: auth.currentUser.uid,
+      action: 'display_name_changed',
+      category: 'profile',
+      description: `Alterou o nome de exibição para "${name}"`,
+    }).catch(console.error);
   }
 
   async function updateUserPassword(currentPassword: string, newPassword: string) {
@@ -65,6 +99,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
     await reauthenticateWithCredential(currentUser, credential);
     await updatePassword(currentUser, newPassword);
+    await createActivityLog({
+      userId: currentUser.uid,
+      action: 'password_changed',
+      category: 'security',
+      description: 'Alterou a senha da conta',
+    }).catch(console.error);
   }
 
   function isGoogleUser(): boolean {
@@ -97,6 +137,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       snapshot.forEach((doc) => batch.delete(doc.ref));
       await batch.commit();
     }
+
+    await createActivityLog({
+      userId: currentUser.uid,
+      action: 'account_deleted',
+      category: 'security',
+      description: 'Excluiu a própria conta permanentemente',
+    }).catch(console.error);
 
     await deleteUser(currentUser);
   }

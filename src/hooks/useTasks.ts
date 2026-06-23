@@ -63,15 +63,16 @@ export function useTasks(userId: string | undefined) {
   const deleteTask = useCallback(
     async (id: string) => {
       if (!userId) return;
+      const task = tasks.find((t) => t.id === id);
       try {
-        await removeTask(userId, id);
+        await removeTask(userId, id, task?.name);
         toast.success('Tarefa excluída!');
       } catch (error) {
         console.error('Erro ao remover tarefa:', error);
         toast.error('Erro ao excluir tarefa.');
       }
     },
-    [userId],
+    [userId, tasks],
   );
 
   const editTask = useCallback(
@@ -79,15 +80,16 @@ export function useTasks(userId: string | undefined) {
       if (!userId) return;
       const trimmedName = newName.trim();
       if (!trimmedName) return;
+      const task = tasks.find((t) => t.id === id);
       try {
-        await renameTask(userId, id, trimmedName);
+        await renameTask(userId, id, trimmedName, task?.name);
         toast.success('Tarefa renomeada!');
       } catch (error) {
         console.error('Erro ao editar tarefa:', error);
         toast.error('Erro ao salvar alteração.');
       }
     },
-    [userId],
+    [userId, tasks],
   );
 
   const toggleTask = useCallback(
@@ -96,7 +98,7 @@ export function useTasks(userId: string | undefined) {
       const task = tasks.find((t) => t.id === id);
       if (!task) return;
       try {
-        await toggleTaskService(userId, id, task.completed);
+        await toggleTaskService(userId, id, task.completed, task.name);
         toast.success(
           task.completed ? 'Tarefa marcada como ativa' : 'Tarefa concluída com sucesso!',
         );
