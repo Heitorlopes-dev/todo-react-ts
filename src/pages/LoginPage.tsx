@@ -159,9 +159,9 @@ export function LoginPage() {
             </button>
 
             {/* Divider */}
-            <div className="fconst [mode, setMode] = useState<Mode>('login');lex items-center gap-4 relative z-10">
+            <div className="flex justify-center fconst [mode, setMode] = useState<Mode>('login');lex items-center gap-4 relative z-10">
               <div className="flex-1 h-px bg-linear-to-r from-transparent to-white/10" />
-              <span className="text-[1.3rem] font-bold text-white/30 uppercase tracking-[0.2em]">ou</span>
+              <span className="text-[1.5rem] font-bold text-white/30 uppercase tracking-[0.2em]">ou</span>
               <div className="flex-1 h-px bg-linear-to-l from-transparent to-white/10" />
             </div>
 
