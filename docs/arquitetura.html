@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação: To-do List</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 1.5em;
+        }
+        h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3rem;
+        }
+        p {
+            margin-bottom: 1rem;
+        }
+        .mermaid {
+            background: #f4f6f8;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .alert {
+            padding: 1rem;
+            border-left: 4px solid #e74c3c;
+            background-color: #fadbd8;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        .alert-tip {
+            border-left-color: #3498db;
+            background-color: #d6eaf8;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #eee;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+    <!-- Script do Mermaid JS para renderizar os diagramas -->
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Documentação da Aplicação: To-do List</h1>
+        <p>Esta documentação detalha a arquitetura, fluxos principais, estrutura de dados e regras de segurança da aplicação.</p>
+
+        <h2>🏗️ 1. Arquitetura</h2>
+        <p>A aplicação segue uma arquitetura client-server baseada em BaaS (Backend as a Service), eliminando a necessidade de um servidor próprio para gerenciar regras de negócios e banco de dados.</p>
+        <ul>
+            <li><strong>Frontend:</strong> Single Page Application (SPA) desenvolvida com React 19, TypeScript e Vite.</li>
+            <li><strong>Backend:</strong> Firebase (Authentication para gestão de identidades e Cloud Firestore para armazenamento de dados).</li>
+            <li><strong>Gerenciamento de Estado Global:</strong> Utiliza a Context API do React (<code>AuthContext</code>) para estado de autenticação e dados do usuário. Hooks customizados (como <code>useTasks</code>) são usados para abstrair as regras de chamadas ao banco de dados.</li>
+            <li><strong>Roteamento:</strong> O React Router (<code>HashRouter</code>) orquestra o roteamento client-side, com componentes de proteção bloqueando acessos indevidos.</li>
+        </ul>
+
+        <h2>🔐 2. Fluxo de Login</h2>
+        <p>O sistema suporta duas formas de autenticação: Email/Senha e Provedor Google. O fluxo de sessão é gerido pelo <code>AuthContext</code>.</p>
+        
+        <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant AuthContext
+    participant FirebaseAuth
+    participant Firestore
+    
+    User->>AuthContext: Submete credenciais (Email ou Google)
+    AuthContext->>FirebaseAuth: Autentica o usuário (signInWithEmailAndPassword / signInWithPopup)
+    FirebaseAuth-->>AuthContext: Retorna UserCredential (uid)
+    
+    Note over AuthContext, Firestore: Upsert do usuário e log de atividade
+    AuthContext->>Firestore: Atualiza doc do usuário em /users/{uid} (upsertUserDocument)
+    AuthContext->>Firestore: Cria log em /users/{uid}/activities (ação: user_login)
+    
+    Note over AuthContext, Firestore: Escuta contínua de dados
+    FirebaseAuth-->>AuthContext: Aciona onAuthStateChanged()
+    AuthContext->>Firestore: Inscreve onSnapshot() no documento do usuário (/users/{uid})
+    Firestore-->>AuthContext: Retorna dados do usuário (ex: role)
+    AuthContext-->>User: Atualiza a interface, redireciona para a home
+        </div>
+
+        <h2>🗂️ 3. Estrutura do Firestore</h2>
+        <p>O banco de dados (NoSQL) é hierarquicamente organizado em torno do <code>uid</code> (User ID) para garantir isolamento e segurança.</p>
+        
+        <div class="mermaid">
+erDiagram
+    USERS {
+        string uid PK
+        string role "Padrão: 'user'"
+    }
+    TASKS {
+        string id PK
+        string name "1 a 500 caracteres"
+        boolean completed "Inicia false"
+        timestamp createdAt
+    }
+    ACTIVITIES {
+        string id PK
+        string action
+        string category
+        string description
+        timestamp createdAt
+    }
+    
+    USERS ||--o{ TASKS : "possui subcoleção"
+    USERS ||--o{ ACTIVITIES : "possui subcoleção"
+        </div>
+        
+        <ul>
+            <li><strong><code>/users/{userId}</code></strong>: Documento raiz do usuário onde, por exemplo, o campo <code>role</code> é armazenado.</li>
+            <li><strong><code>/users/{userId}/tasks/{taskId}</code></strong>: Subcoleção de tarefas. Campos validados de forma estrita para manter a integridade dos dados (somente booleanos para completado, limites de strings no título, etc).</li>
+            <li><strong><code>/users/{userId}/activities/{activityId}</code></strong>: Subcoleção de histórico e auditoria (logs de login, logout, criação de tarefas, exclusão de conta).</li>
+        </ul>
+
+        <h2>🛡️ 4. Regras de Segurança (Firestore Rules)</h2>
+        <p>As regras do Firestore formam a principal linha de defesa contra acessos não autorizados e payloads inválidos.</p>
+        
+        <div class="alert">
+            <strong>Importante:</strong> A API do Firebase é exposta no lado do cliente. As <code>firestore.rules</code> são as únicas responsáveis por impedir que um usuário mal-intencionado manipule dados alheios ou envie dados inválidos (ex: uma <code>string</code> no lugar de um <code>boolean</code>).
+        </div>
+
+        <p>Principais restrições:</p>
+        <ol>
+            <li><strong>Validação de Schema em Criação/Atualização:</strong> As tarefas exigem os campos exatos durante a criação. O tipo dos campos é verificado e validado estritamente.</li>
+            <li><strong>Append-only para Atividades:</strong> A regra da coleção <code>activities</code> declara bloqueio de atualização. Isso garante que ninguém (nem mesmo o dono) consiga modificar um log do histórico após ele ter sido criado.</li>
+            <li><strong>Escopo Default Fechado:</strong> Qualquer acesso não previsto nas regras é negado por padrão.</li>
+        </ol>
+
+        <h2>🚦 5. Fluxo de Permissões (Admin vs User)</h2>
+        <p>A aplicação diferencia usuários comuns de administradores com base no campo <code>role</code> no documento do usuário em <code>/users/{uid}</code>.</p>
+        
+        <p>As regras contam com helpers de verificação como <code>isOwner(userId)</code> e <code>isAdmin()</code> para cruzar o uid da requisição com os dados do banco.</p>
+
+        <h3>Tabela de Permissões (Matriz de Acesso)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Recurso (Firestore)</th>
+                    <th>Ação</th>
+                    <th>Permissão <code>user</code> (Dono)</th>
+                    <th>Permissão <code>admin</code></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>User Doc</strong> (<code>/users/{uid}</code>)</td>
+                    <td>Leitura (<code>read</code>)</td>
+                    <td>✅ (Apenas o próprio)</td>
+                    <td>✅ (Qualquer user doc)</td>
+                </tr>
+                <tr>
+                    <td><strong>User Doc</strong> (<code>/users/{uid}</code>)</td>
+                    <td>Atualização (<code>update</code>)</td>
+                    <td>✅ (NÃO pode alterar o <code>role</code>)</td>
+                    <td>✅ (Altera qualquer campo)</td>
+                </tr>
+                <tr>
+                    <td><strong>Tarefas</strong> (<code>/tasks/{id}</code>)</td>
+                    <td>CRUD completo</td>
+                    <td>✅ (Apenas as próprias)</td>
+                    <td>❌ (Privacidade garantida)</td>
+                </tr>
+                <tr>
+                    <td><strong>Atividades</strong> (<code>/activities/{id}</code>)</td>
+                    <td>Leitura (<code>read</code>)</td>
+                    <td>✅ (Apenas as próprias)</td>
+                    <td>✅ (Ver histórico de todos)</td>
+                </tr>
+                <tr>
+                    <td><strong>Atividades</strong> (<code>/activities/{id}</code>)</td>
+                    <td>Criação (<code>create</code>)</td>
+                    <td>✅</td>
+                    <td>❌ (Não cria logs pros outros)</td>
+                </tr>
+                <tr>
+                    <td><strong>Atividades</strong> (<code>/activities/{id}</code>)</td>
+                    <td>Deleção (<code>delete</code>)</td>
+                    <td>✅ (Limpar próprio histórico)</td>
+                    <td>❌</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="alert alert-tip">
+            <strong>Dica de Segurança:</strong> A proteção da mudança de role é estrita através da função <code>affectedKeys</code> do Firestore. Isso previne o "Privilege Escalation", ou seja, garante que um usuário comum jamais conseguirá se tornar administrador usando requisições maliciosas. Somente outro administrador ou um script backend de manutenção podem alterar a <code>role</code>.
+        </div>
+    </div>
+</body>
+</html>
