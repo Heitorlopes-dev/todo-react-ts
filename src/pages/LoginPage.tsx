@@ -79,14 +79,22 @@ export function LoginPage() {
       <div className="absolute top-[20%] left-[40%] w-[30%] h-[30%] rounded-full bg-emerald-400/10 blur-[80px] pointer-events-none animate-pulse duration-12000" />
 
       {/* ── Left panel — banner image ── */}
-      <div className="hidden md:flex md:w-[45%] lg:w-[50%] relative overflow-hidden shadow-[20px_0_50px_rgba(0,0,0,0.5)] z-0">
-        <img
-          src="/todo-react-ts/login-banner.jpg"
-          alt="Agronorte – campo"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-[20s] hover:scale-110"
-        />
-        {/* Gradient overlay for blending */}
-        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/40 to-[#0a0f12]" />
+      <div className="hidden md:flex md:w-[45%] lg:w-[50%] relative overflow-hidden z-0">
+        <div 
+          className="absolute inset-0 pointer-events-auto"
+          style={{
+            maskImage: 'linear-gradient(to right, black 50%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 50%, transparent 100%)'
+          }}
+        >
+          <img
+            src="/todo-react-ts/login-banner.jpg"
+            alt="Agronorte – campo"
+            className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-[20s] hover:scale-110"
+          />
+          {/* Subtle overlay so text remains readable */}
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+        </div>
         
         <div className="relative z-10 flex flex-col justify-end h-full px-12 py-16 lg:px-20 lg:py-24">
           <div className="pb-8 space-y-6 animate-in slide-in-from-left-8 fade-in duration-1000">
@@ -159,7 +167,7 @@ export function LoginPage() {
             </button>
 
             {/* Divider */}
-            <div className="flex justify-center fconst [mode, setMode] = useState<Mode>('login');lex items-center gap-4 relative z-10">
+            <div className="flex items-center justify-center gap-4 relative z-10">
               <div className="flex-1 h-px bg-linear-to-r from-transparent to-white/10" />
               <span className="text-[1.5rem] font-bold text-white/30 uppercase tracking-[0.2em]">ou</span>
               <div className="flex-1 h-px bg-linear-to-l from-transparent to-white/10" />
