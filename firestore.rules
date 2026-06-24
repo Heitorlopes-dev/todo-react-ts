@@ -44,7 +44,8 @@ service cloud.firestore {
         && request.resource.data.description is string
         && request.resource.data.createdAt == request.time;
 
-      allow update, delete: if false; // Logs de atividade não devem ser modificados
+      allow delete: if isOwner(userId); // Permitido para o usuário limpar seu próprio histórico
+      allow update: if false; // Logs de atividade não devem ser modificados
     }
 
     // Nenhum outro acesso permitido

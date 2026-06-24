@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserActivities, type ActivityLog } from '@/services/activity-service';
+import { getUserActivities, clearUserActivities, type ActivityLog } from '@/services/activity-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, Activity as ActivityIcon, Trash, Check, Edit, LogOut, Lock, User, Shield } from 'lucide-react';
+import { ArrowLeft, Clock, Activity as ActivityIcon, Trash, Check, Edit, LogOut, Lock, User, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const actionIcons: Record<string, React.ReactNode> = {
@@ -84,6 +84,24 @@ export function ActivityPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+
+  async function handleClearHistory() {
+    if (!user?.uid) return;
+    if (!window.confirm('Tem certeza que deseja apagar todo o histórico de atividades? Essa ação não pode ser desfeita.')) return;
+    
+    setClearing(true);
+    try {
+      await clearUserActivities(user.uid);
+      setActivities([]);
+      toast.success('Histórico apagado com sucesso.');
+    } catch (error) {
+      console.error('Erro ao limpar histórico:', error);
+      toast.error('Erro ao limpar o histórico.');
+    } finally {
+      setClearing(false);
+    }
+  }
 
   useEffect(() => {
     async function loadActivities() {
@@ -127,9 +145,21 @@ export function ActivityPage() {
                 </p>
               </div>
             </div>
+            
+            {activities.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleClearHistory}
+                disabled={clearing}
+                className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 text-[1.3rem] rounded-xl flex items-center gap-2 cursor-pointer transition-all"
+              >
+                {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
+                Limpar Histórico
+              </Button>
+            )}
           </CardHeader>
 
-          <CardContent className="pt-8">
+          <CardContent className="pt-8 overflow-scroll max-h-[70vh] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-500 border-t-transparent"></div>
