@@ -4,7 +4,9 @@ import { LoginPage } from './pages/LoginPage';
 import { TodoPage } from './pages/TodoPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ActivityPage } from './pages/ActivityPage';
+import { AdminPage } from './pages/AdminPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
 import { Toaster } from './components/ui/sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -36,6 +38,14 @@ export function App() {
                 <ProtectedRoute>
                   <ActivityPage />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
               }
             />
             <Route path="/login" element={<LoginPage />} />

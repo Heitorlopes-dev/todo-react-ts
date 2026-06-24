@@ -17,25 +17,48 @@ import {
   getAdditionalUserInfo,
   type User,
 } from 'firebase/auth';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { AuthContext } from './authContext';
+import { AuthContext, type UserData } from './authContext';
 import { createActivityLog } from '../services/activity-service';
+import { upsertUserDocument } from '../services/user-service';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    let unsubscribeDoc: () => void;
+    
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      
+      if (currentUser) {
+        unsubscribeDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            setUserData(docSnap.data() as UserData);
+          } else {
+            setUserData(null);
+          }
+          setLoading(false);
+        });
+      } else {
+        setUserData(null);
+        setLoading(false);
+        if (unsubscribeDoc) unsubscribeDoc();
+      }
     });
-    return unsubscribe;
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeDoc) unsubscribeDoc();
+    };
   }, []);
 
   async function signIn(email: string, password: string) {
     const cred = await signInWithEmailAndPassword(auth, email, password);
+    await upsertUserDocument(cred.user);
     await createActivityLog({
       userId: cred.user.uid,
       action: 'user_login',
@@ -47,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(email: string, password: string) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await sendEmailVerification(cred.user);
+    await upsertUserDocument(cred.user);
     // Removemos o log de atividade aqui para não criar documentos até a confirmação de e-mail
   }
 
@@ -65,6 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await deleteUser(cred.user);
       throw new Error('Conta não encontrada. Por favor, cadastre-se.');
     }
+
+    await upsertUserDocument(cred.user);
 
     await createActivityLog({
       userId: cred.user.uid,
@@ -95,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth.currentUser) throw new Error('Nenhum usuário autenticado.');
     await updateProfile(auth.currentUser, { displayName: name });
     setUser({ ...auth.currentUser });
+    await upsertUserDocument(auth.currentUser);
     await createActivityLog({
       userId: auth.currentUser.uid,
       action: 'display_name_changed',
@@ -162,6 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        userData,
         loading,
         signIn,
         signUp,

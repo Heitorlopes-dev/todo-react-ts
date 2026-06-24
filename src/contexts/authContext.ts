@@ -1,8 +1,28 @@
 import { createContext } from 'react';
 import type { User } from 'firebase/auth';
 
+type TimestampValue = 
+  | Date 
+  | number 
+  | string 
+  | { toDate: () => Date } 
+  | { seconds: number } 
+  | null 
+  | undefined;
+
+export type UserData = {
+  email?: string;
+  displayName?: string;
+  photoURL?: string;
+  emailVerified?: boolean;
+  role?: string;
+  createdAt?: TimestampValue;
+  lastLoginAt?: TimestampValue;
+};
+
 export type AuthContextType = {
   user: User | null;
+  userData: UserData | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
