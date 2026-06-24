@@ -13,6 +13,8 @@ import {
   deleteUser,
   signInWithPopup,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  getAdditionalUserInfo,
   type User,
 } from 'firebase/auth';
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
@@ -44,23 +46,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signUp(email: string, password: string) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await createActivityLog({
-      userId: cred.user.uid,
-      action: 'user_login',
-      category: 'auth',
-      description: 'Criou uma nova conta',
-    }).catch(console.error);
+    await sendEmailVerification(cred.user);
+    // Removemos o log de atividade aqui para não criar documentos até a confirmação de e-mail
   }
 
-  async function signInWithGoogle() {
+  async function signInWithGoogle(mode: 'login' | 'register') {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     const cred = await signInWithPopup(auth, provider);
+    const additionalInfo = getAdditionalUserInfo(cred);
+    
+    if (mode === 'register' && !additionalInfo?.isNewUser) {
+      await signOut(auth);
+      throw new Error('Conta já cadastrada. Por favor, faça login.');
+    }
+    
+    if (mode === 'login' && additionalInfo?.isNewUser) {
+      await deleteUser(cred.user);
+      throw new Error('Conta não encontrada. Por favor, cadastre-se.');
+    }
+
     await createActivityLog({
       userId: cred.user.uid,
       action: 'user_login',
       category: 'auth',
-      description: 'Fez login com o Google',
+      description: mode === 'register' ? 'Criou uma nova conta com Google' : 'Fez login com o Google',
     }).catch(console.error);
   }
 

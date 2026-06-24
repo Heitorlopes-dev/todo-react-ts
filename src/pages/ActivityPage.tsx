@@ -34,17 +34,26 @@ const categoryLabels: Record<string, string> = {
   security: 'Segurança',
 };
 
-function formatDate(timestamp: any): string {
+type TimestampValue = 
+  | Date 
+  | number 
+  | string 
+  | { toDate: () => Date } 
+  | { seconds: number } 
+  | null 
+  | undefined;
+
+function formatDate(timestamp: TimestampValue): string {
   if (!timestamp) return '';
   
   let date: Date;
-  if (typeof timestamp.toDate === 'function') {
-    date = timestamp.toDate();
-  } else if (timestamp instanceof Date) {
+  if (timestamp instanceof Date) {
     date = timestamp;
   } else if (typeof timestamp === 'number' || typeof timestamp === 'string') {
     date = new Date(timestamp);
-  } else if (timestamp.seconds) {
+  } else if ('toDate' in timestamp && typeof timestamp.toDate === 'function') {
+    date = timestamp.toDate();
+  } else if ('seconds' in timestamp && typeof timestamp.seconds === 'number') {
     date = new Date(timestamp.seconds * 1000);
   } else {
     return '';

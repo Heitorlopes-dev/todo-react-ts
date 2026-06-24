@@ -21,5 +21,8 @@ export function getFirebaseErrorMessage(
   if (err instanceof FirebaseError) {
     return ERROR_MESSAGES[err.code] ?? `${fallback} (${err.code})`;
   }
+  if (err instanceof Error) {
+    return err.message;
+  }
   return fallback;
 }

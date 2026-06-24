@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback ?? (
-        <div className="min-h-screen bg-[#0f1f18] flex items-center justify-center">
+        <div className="min-h-screen bg-app-bg flex items-center justify-center">
           <div className="text-center space-y-4">
             <div className="h-16 w-16 mx-auto rounded-2xl bg-red-500/20 flex items-center justify-center">
               <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -30,7 +30,7 @@ export function LoginPage() {
         toast.success('Bem-vindo de volta!');
       } else {
         await signUp(email, password);
-        toast.success('Conta criada com sucesso! Bem-vindo!');
+        toast.success('Conta criada com sucesso! Verifique seu e-mail para continuar.');
       }
       navigate('/');
     } catch (err: unknown) {
@@ -43,8 +43,8 @@ export function LoginPage() {
   async function handleGoogleLogin() {
     setGoogleLoading(true);
     try {
-      await signInWithGoogle();
-      toast.success('Bem-vindo!');
+      await signInWithGoogle(mode);
+      toast.success(mode === 'login' ? 'Bem-vindo!' : 'Conta criada com sucesso!');
       navigate('/');
     } catch (err: unknown) {
       toast.error(getFirebaseErrorMessage(err, 'Erro ao entrar com Google.'));
@@ -74,9 +74,9 @@ export function LoginPage() {
     <div className="relative flex h-screen w-full overflow-hidden bg-[#0a0f12]">
       
       {/* Dynamic Background Glowing Orbs */}
-      <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-600/20 blur-[120px] pointer-events-none animate-pulse duration-[10000ms]" />
-      <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] rounded-full bg-teal-600/20 blur-[100px] pointer-events-none animate-pulse duration-[8000ms] delay-700" />
-      <div className="absolute top-[20%] left-[40%] w-[30%] h-[30%] rounded-full bg-emerald-400/10 blur-[80px] pointer-events-none animate-pulse duration-[12000ms]" />
+      <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-600/20 blur-[120px] pointer-events-none animate-pulse duration-10000" />
+      <div className="absolute bottom-[-15%] right-[-5%] w-[40%] h-[40%] rounded-full bg-teal-600/20 blur-[100px] pointer-events-none animate-pulse duration-8000 delay-700" />
+      <div className="absolute top-[20%] left-[40%] w-[30%] h-[30%] rounded-full bg-emerald-400/10 blur-[80px] pointer-events-none animate-pulse duration-12000" />
 
       {/* ── Left panel — banner image ── */}
       <div className="hidden md:flex md:w-[45%] lg:w-[50%] relative overflow-hidden shadow-[20px_0_50px_rgba(0,0,0,0.5)] z-0">
@@ -86,14 +86,14 @@ export function LoginPage() {
           className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-[20s] hover:scale-110"
         />
         {/* Gradient overlay for blending */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-[#0a0f12]" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/40 to-[#0a0f12]" />
         
         <div className="relative z-10 flex flex-col justify-end h-full px-12 py-16 lg:px-20 lg:py-24">
           <div className="pb-8 space-y-6 animate-in slide-in-from-left-8 fade-in duration-1000">
             <div className="w-16 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
             <h2 className="text-white text-[3rem] lg:text-[4rem] font-extrabold leading-tight tracking-tight">
               Organize seu dia. <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-300">
                 Conquiste seus objetivos.
               </span>
             </h2>
@@ -110,7 +110,7 @@ export function LoginPage() {
           
           {/* Logo / Branding */}
           <div className="flex items-center gap-5 mb-10 justify-center md:justify-start">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+            <div className="h-16 w-16 rounded-2xl bg-linear-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
               <svg className="h-8 w-8 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
@@ -122,9 +122,9 @@ export function LoginPage() {
           </div>
 
           {/* Form card with Glassmorphism */}
-          <div className="relative bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-2xl p-10 md:p-12 space-y-8 overflow-hidden">
+          <div className="relative bg-white/2 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-2xl p-10 md:p-12 space-y-8 overflow-hidden">
             {/* Subtle inner highlight */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
 
             {/* Heading */}
             <div className="space-y-2 relative z-10">
@@ -143,7 +143,7 @@ export function LoginPage() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={googleLoading || loading}
-              className="relative z-10 w-full flex items-center justify-center gap-3 bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 rounded-2xl h-14 text-[1.5rem] font-semibold text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group"
+              className="relative z-10 w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 rounded-2xl h-14 text-[1.5rem] font-semibold text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group"
             >
               {googleLoading ? (
                 <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
@@ -159,10 +159,10 @@ export function LoginPage() {
             </button>
 
             {/* Divider */}
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/10" />
+            <div className="fconst [mode, setMode] = useState<Mode>('login');lex items-center gap-4 relative z-10">
+              <div className="flex-1 h-px bg-linear-to-r from-transparent to-white/10" />
               <span className="text-[1.3rem] font-bold text-white/30 uppercase tracking-[0.2em]">ou</span>
-              <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/10" />
+              <div className="flex-1 h-px bg-linear-to-l from-transparent to-white/10" />
             </div>
 
             {/* Email/password form */}
@@ -233,7 +233,7 @@ export function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.98] text-white font-bold transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] border-none h-14 text-[1.6rem] rounded-2xl cursor-pointer flex items-center justify-center gap-2 mt-2"
+                className="w-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.98] text-white font-bold transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] border-none h-14 text-[1.6rem] rounded-2xl cursor-pointer flex items-center justify-center gap-2 mt-2"
               >
                 {loading ? (
                   <>
