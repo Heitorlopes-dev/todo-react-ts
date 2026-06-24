@@ -148,6 +148,15 @@ export function TodoPage() {
                     </p>
                   )}
                 </ul>
+                <div className="flex justify-center mt-6">
+                  <Button
+                    variant="link"
+                    onClick={() => navigate('/archive')}
+                    className="text-white/40 hover:text-white/80 transition-colors"
+                  >
+                    Ver histórico de concluídas
+                  </Button>
+                </div>
               </div>
             )}
           </div>

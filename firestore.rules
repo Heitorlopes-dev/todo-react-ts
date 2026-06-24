@@ -15,7 +15,17 @@ service cloud.firestore {
     // Regras para o documento raiz do usuário
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId);
+      
+      // Permitir criação se o usuário for o dono e a role inserida for apenas 'user' (ou omitida)
+      allow create: if isOwner(userId) 
+        && (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role == 'user');
+      
+      // Permitir atualização apenas se o usuário for o dono e NÃO tentar alterar a 'role'
+      // Administradores podem atualizar tudo
+      allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+                    || isAdmin();
+                    
+      allow delete: if isOwner(userId) || isAdmin();
     }
 
     // Cada usuário só acessa suas próprias tarefas

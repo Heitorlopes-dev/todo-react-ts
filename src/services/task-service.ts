@@ -6,7 +6,68 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
+  limit as firestoreLimit,
+  startAfter,
+  getDocs,
+  type QueryDocumentSnapshot,
+  type DocumentData,
+  type Timestamp
 } from 'firebase/firestore';
+
+export interface ArchivedTask {
+  id: string;
+  name: string;
+  completed: boolean;
+  createdAt: Timestamp;
+  ref: QueryDocumentSnapshot<DocumentData>;
+}
+
+export async function getArchivedTasksPaginated(
+  userId: string,
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null,
+  limitSize: number = 20
+): Promise<{ tasks: ArchivedTask[], lastDoc: QueryDocumentSnapshot<DocumentData> | null, hasMore: boolean }> {
+  let q;
+  
+  if (lastDoc) {
+    q = query(
+      tasksCollection(userId),
+      where('completed', '==', true),
+      orderBy('createdAt', 'desc'),
+      startAfter(lastDoc),
+      firestoreLimit(limitSize)
+    );
+  } else {
+    q = query(
+      tasksCollection(userId),
+      where('completed', '==', true),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(limitSize)
+    );
+  }
+
+  const snapshot = await getDocs(q);
+  
+  const tasks = snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name ?? '',
+      completed: data.completed ?? true,
+      createdAt: data.createdAt as Timestamp,
+      ref: doc,
+    };
+  });
+
+  return {
+    tasks,
+    lastDoc: snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null,
+    hasMore: snapshot.docs.length === limitSize
+  };
+}
 
 function tasksCollection(userId: string) {
   return collection(db, 'users', userId, 'tasks');

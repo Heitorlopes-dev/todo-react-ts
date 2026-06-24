@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllUsers, getUserActivitiesAsAdmin, type AdminUser, type AdminActivityLog } from '@/services/admin-service';
+import { getUsersPaginated, getUserActivitiesAsAdmin, type AdminUser, type AdminActivityLog } from '@/services/admin-service';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, Clock, ShieldCheck, Activity, Search, X, Check, Trash, Edit, LogOut, Lock, User, Shield } from 'lucide-react';
@@ -59,7 +60,10 @@ export function AdminPage() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState('');
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
   // Modal State
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
@@ -69,14 +73,21 @@ export function AdminPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        const data = await getAllUsers();
+        const { users: data, lastDoc: newLastDoc, hasMore: more } = await getUsersPaginated(null, 15);
+        const getMillis = (timestamp: TimestampValue) => {
+          if (!timestamp) return 0;
+          if (typeof timestamp === 'object' && 'toMillis' in timestamp && typeof timestamp.toMillis === 'function') return timestamp.toMillis();
+          if (timestamp instanceof Date) return timestamp.getTime();
+          if (typeof timestamp === 'number') return timestamp;
+          if (typeof timestamp === 'object' && 'seconds' in timestamp && typeof timestamp.seconds === 'number') return timestamp.seconds * 1000;
+          return 0;
+        };
+        
         // Ordenar por último acesso
-        data.sort((a, b) => {
-          const timeA = a.lastLoginAt?.toMillis ? a.lastLoginAt.toMillis() : 0;
-          const timeB = b.lastLoginAt?.toMillis ? b.lastLoginAt.toMillis() : 0;
-          return timeB - timeA;
-        });
+        data.sort((a, b) => getMillis(b.lastLoginAt) - getMillis(a.lastLoginAt));
         setUsers(data);
+        setLastDoc(newLastDoc);
+        setHasMore(more);
       } catch (error) {
         console.error('Erro ao carregar usuários:', error);
         toast.error('Erro ao carregar dados do painel.');
@@ -86,6 +97,34 @@ export function AdminPage() {
     }
     loadUsers();
   }, []);
+
+  async function loadMoreUsers() {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { users: data, lastDoc: newLastDoc, hasMore: more } = await getUsersPaginated(lastDoc, 15);
+      
+      const getMillis = (timestamp: TimestampValue) => {
+        if (!timestamp) return 0;
+        if (typeof timestamp === 'object' && 'toMillis' in timestamp && typeof timestamp.toMillis === 'function') return timestamp.toMillis();
+        if (timestamp instanceof Date) return timestamp.getTime();
+        if (typeof timestamp === 'number') return timestamp;
+        if (typeof timestamp === 'object' && 'seconds' in timestamp && typeof timestamp.seconds === 'number') return timestamp.seconds * 1000;
+        return 0;
+      };
+      
+      data.sort((a, b) => getMillis(b.lastLoginAt) - getMillis(a.lastLoginAt));
+      
+      setUsers((prev) => [...prev, ...data]);
+      setLastDoc(newLastDoc);
+      setHasMore(more);
+    } catch (error) {
+      console.error('Erro ao carregar mais usuários:', error);
+      toast.error('Erro ao carregar mais dados.');
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function handleViewActivities(user: AdminUser) {
     setSelectedUser(user);
@@ -220,6 +259,19 @@ export function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            )}
+            
+            {!loading && hasMore && filteredUsers.length > 0 && !search && (
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="outline"
+                  onClick={loadMoreUsers}
+                  disabled={loadingMore}
+                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl"
+                >
+                  {loadingMore ? 'Carregando...' : 'Carregar Mais Usuários'}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>

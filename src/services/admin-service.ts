@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, limit as firestoreLimit, type Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit as firestoreLimit, startAfter, type Timestamp, type DocumentData, type QueryDocumentSnapshot } from 'firebase/firestore';
 import type { ActivityAction, ActivityCategory } from './activity-service';
 
 export interface AdminUser {
@@ -11,6 +11,7 @@ export interface AdminUser {
   emailVerified: boolean;
   createdAt: Timestamp;
   lastLoginAt: Timestamp;
+  ref?: QueryDocumentSnapshot<DocumentData>;
 }
 
 export interface AdminActivityLog {
@@ -22,11 +23,22 @@ export interface AdminActivityLog {
   createdAt: Timestamp;
 }
 
-export async function getAllUsers(): Promise<AdminUser[]> {
+export async function getUsersPaginated(
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null,
+  limitSize: number = 20
+): Promise<{ users: AdminUser[], lastDoc: QueryDocumentSnapshot<DocumentData> | null, hasMore: boolean }> {
   const usersRef = collection(db, 'users');
-  const snapshot = await getDocs(usersRef);
+  let q;
   
-  return snapshot.docs.map((doc) => {
+  if (lastDoc) {
+    q = query(usersRef, orderBy('lastLoginAt', 'desc'), startAfter(lastDoc), firestoreLimit(limitSize));
+  } else {
+    q = query(usersRef, orderBy('lastLoginAt', 'desc'), firestoreLimit(limitSize));
+  }
+
+  const snapshot = await getDocs(q);
+  
+  const users = snapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
@@ -37,8 +49,15 @@ export async function getAllUsers(): Promise<AdminUser[]> {
       emailVerified: data.emailVerified || false,
       createdAt: data.createdAt as Timestamp,
       lastLoginAt: data.lastLoginAt as Timestamp,
+      ref: doc,
     };
   });
+
+  return {
+    users,
+    lastDoc: snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null,
+    hasMore: snapshot.docs.length === limitSize
+  };
 }
 
 export async function getUserActivitiesAsAdmin(

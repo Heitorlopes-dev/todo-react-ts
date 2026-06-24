@@ -27,3 +27,6 @@ dist-ssr
 *.sw?
 
 *.agents/skills/
+
+*.firestore.rules
+

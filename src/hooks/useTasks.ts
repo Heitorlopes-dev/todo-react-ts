@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { query, orderBy, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { query, orderBy, onSnapshot, where, limit } from 'firebase/firestore';
 import { toast } from 'sonner';
 import type { Task } from '@/types';
 import {
@@ -14,13 +14,32 @@ export function useTasks(userId: string | undefined) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const openTasksRef = useRef<Task[]>([]);
+  const completedTasksRef = useRef<Task[]>([]);
+
   useEffect(() => {
     if (!userId) return;
 
-    const q = query(tasksCollection(userId), orderBy('createdAt', 'asc'));
+    let loadingOpen = true;
+    let loadingCompleted = true;
 
-    const unsubscribe = onSnapshot(
-      q,
+    const mergeAndSetTasks = () => {
+      if (loadingOpen || loadingCompleted) return;
+      const merged = [...openTasksRef.current, ...completedTasksRef.current];
+      merged.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeA - timeB; // ascending
+      });
+      setTasks(merged);
+      setLoading(false);
+    };
+
+    const qOpen = query(tasksCollection(userId), where('completed', '==', false));
+    const qCompleted = query(tasksCollection(userId), where('completed', '==', true), orderBy('createdAt', 'desc'), limit(20));
+
+    const unsubOpen = onSnapshot(
+      qOpen,
       (snapshot) => {
         const fetchedTasks: Task[] = [];
         snapshot.forEach((doc) => {
@@ -28,20 +47,51 @@ export function useTasks(userId: string | undefined) {
           fetchedTasks.push({
             id: doc.id,
             name: data.name ?? '',
-            completed: data.completed ?? false,
+            completed: false,
+            createdAt: data.createdAt,
           });
         });
-        setTasks(fetchedTasks);
-        setLoading(false);
+        openTasksRef.current = fetchedTasks;
+        loadingOpen = false;
+        mergeAndSetTasks();
       },
       (error) => {
-        console.error('Erro ao escutar tarefas no Firestore:', error);
-        toast.error('Erro de conexão ao carregar tarefas.');
-        setLoading(false);
-      },
+        console.error('Erro ao escutar tarefas abertas no Firestore:', error);
+        toast.error('Erro de conexão ao carregar tarefas abertas.');
+        loadingOpen = false;
+        mergeAndSetTasks();
+      }
     );
 
-    return unsubscribe;
+    const unsubCompleted = onSnapshot(
+      qCompleted,
+      (snapshot) => {
+        const fetchedTasks: Task[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          fetchedTasks.push({
+            id: doc.id,
+            name: data.name ?? '',
+            completed: true,
+            createdAt: data.createdAt,
+          });
+        });
+        completedTasksRef.current = fetchedTasks;
+        loadingCompleted = false;
+        mergeAndSetTasks();
+      },
+      (error) => {
+        console.error('Erro ao escutar tarefas concluídas no Firestore (Você pode precisar criar um Índice no Console):', error);
+        // Ocultar erro silenciosamente, pois se faltar índice, as abertas continuarão funcionando.
+        loadingCompleted = false;
+        mergeAndSetTasks();
+      }
+    );
+
+    return () => {
+      unsubOpen();
+      unsubCompleted();
+    };
   }, [userId]);
 
   const addTask = useCallback(
