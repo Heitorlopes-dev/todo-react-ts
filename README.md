@@ -18,7 +18,7 @@ Este projeto tem como objetivo principal fornecer uma ferramenta eficiente e res
   * **Firebase Authentication:** Gerenciamento de login e sessões de usuários.
   * **Cloud Firestore:** Banco de dados NoSQL em tempo real.
 * **Qualidade de Código:** ESLint com regras estritas para TypeScript e React.
-* **Deploy:** GitHub Pages (`gh-pages`).
+* **Deploy:** GitHub Pages via GitHub Actions.
 
 ## ⚙️ Regras e Lógica de Negócio
 
