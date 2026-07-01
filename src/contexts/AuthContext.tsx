@@ -17,7 +17,7 @@ import {
   getAdditionalUserInfo,
   type User,
 } from 'firebase/auth';
-import { collection, getDocs, writeBatch, doc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { AuthContext, type UserData } from './authContext';
 import { createActivityLog } from '../services/activity-service';
@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentUser);
       
       if (currentUser) {
+        if (unsubscribeDoc) unsubscribeDoc();
         unsubscribeDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
           if (docSnap.exists()) {
             setUserData(docSnap.data() as UserData);
@@ -171,17 +172,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const snapshot = await getDocs(tasksRef);
     if (!snapshot.empty) {
       const batch = writeBatch(db);
-      snapshot.forEach((doc) => batch.delete(doc.ref));
+      snapshot.forEach((docSnap) => batch.delete(docSnap.ref));
       await batch.commit();
     }
 
-    await createActivityLog({
-      userId: currentUser.uid,
-      action: 'account_deleted',
-      category: 'security',
-      description: 'Excluiu a própria conta permanentemente',
-    }).catch(console.error);
+    // Delete all user activities
+    const activitiesRef = collection(db, 'users', currentUser.uid, 'activities');
+    const activitiesSnapshot = await getDocs(activitiesRef);
+    if (!activitiesSnapshot.empty) {
+      const batch = writeBatch(db);
+      activitiesSnapshot.forEach((docSnap) => batch.delete(docSnap.ref));
+      await batch.commit();
+    }
 
+    // Delete the user document itself
+    await deleteDoc(doc(db, 'users', currentUser.uid));
+
+    // Delete the user from Auth
     await deleteUser(currentUser);
   }
 

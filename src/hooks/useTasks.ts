@@ -27,8 +27,8 @@ export function useTasks(userId: string | undefined) {
       if (loadingOpen || loadingCompleted) return;
       const merged = [...openTasksRef.current, ...completedTasksRef.current];
       merged.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : Date.now();
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : Date.now();
         return timeA - timeB; // ascending
       });
       setTasks(merged);
@@ -43,7 +43,7 @@ export function useTasks(userId: string | undefined) {
       (snapshot) => {
         const fetchedTasks: Task[] = [];
         snapshot.forEach((doc) => {
-          const data = doc.data();
+          const data = doc.data({ serverTimestamps: 'estimate' });
           fetchedTasks.push({
             id: doc.id,
             name: data.name ?? '',
@@ -68,7 +68,7 @@ export function useTasks(userId: string | undefined) {
       (snapshot) => {
         const fetchedTasks: Task[] = [];
         snapshot.forEach((doc) => {
-          const data = doc.data();
+          const data = doc.data({ serverTimestamps: 'estimate' });
           fetchedTasks.push({
             id: doc.id,
             name: data.name ?? '',

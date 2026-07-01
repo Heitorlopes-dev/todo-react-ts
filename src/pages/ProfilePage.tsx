@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ export function ProfilePage() {
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate('/')}
+                onClick={() => navigate({ to: '/', viewTransition: true })}
                 className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white cursor-pointer p-0"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -39,7 +39,7 @@ export function ProfilePage() {
             </div>
             <Button
               variant="ghost"
-              onClick={() => navigate('/activities')}
+              onClick={() => navigate({ to: '/activities', viewTransition: true })}
               className="h-12 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white cursor-pointer gap-2"
             >
               <ActivityIcon className="h-5 w-5" />

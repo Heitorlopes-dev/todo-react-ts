@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -32,7 +32,7 @@ export function LoginPage() {
         await signUp(email, password);
         toast.success('Conta criada com sucesso! Verifique seu e-mail para continuar.');
       }
-      navigate('/');
+      navigate({ to: '/', viewTransition: true });
     } catch (err: unknown) {
       toast.error(getFirebaseErrorMessage(err));
     } finally {
@@ -45,7 +45,7 @@ export function LoginPage() {
     try {
       await signInWithGoogle(mode);
       toast.success(mode === 'login' ? 'Bem-vindo!' : 'Conta criada com sucesso!');
-      navigate('/');
+      navigate({ to: '/', viewTransition: true });
     } catch (err: unknown) {
       toast.error(getFirebaseErrorMessage(err, 'Erro ao entrar com Google.'));
     } finally {

@@ -1,0 +1,47 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e3]:
+    - generic [ref=f4e4]:
+      - img "Agronorte – campo" [ref=f4e6]
+      - generic [ref=f4e8]:
+        - heading "Organize seu dia. Conquiste seus objetivos." [level=2] [ref=f4e10]:
+          - text: Organize seu dia.
+          - text: Conquiste seus objetivos.
+        - paragraph [ref=f4e11]: A plataforma definitiva para manter suas tarefas rurais e urbanas sob controle total.
+    - generic [ref=f4e13]:
+      - generic [ref=f4e14]:
+        - img [ref=f4e16]
+        - generic [ref=f4e18]:
+          - generic [ref=f4e19]: Lista de Tarefas
+          - generic [ref=f4e20]: Agronorte
+      - generic [ref=f4e21]:
+        - generic [ref=f4e22]:
+          - heading "Criar nova conta" [level=1] [ref=f4e23]
+          - paragraph [ref=f4e24]: Preencha os dados abaixo para se registrar.
+        - button "Continuar com o Google" [disabled] [ref=f4e25]:
+          - img [ref=f4e26]
+          - generic [ref=f4e31]: Continuar com o Google
+        - generic [ref=f4e34]: ou
+        - generic [ref=f4e36]:
+          - generic [ref=f4e37]:
+            - text: E-mail
+            - generic [ref=f4e38]:
+              - img
+              - textbox "E-mail" [ref=f4e39]:
+                - /placeholder: voce@exemplo.com
+                - text: novo_usuario@agronorte.com.br
+          - generic [ref=f4e40]:
+            - text: Senha
+            - generic [ref=f4e41]:
+              - img
+              - textbox "Senha" [ref=f4e42]:
+                - /placeholder: Sua senha secreta
+                - text: senha_segura123
+              - button "Mostrar senha" [ref=f4e43] [cursor=pointer]:
+                - img [ref=f4e44]
+          - button "Processando..." [disabled]:
+            - img
+            - text: Processando...
+        - paragraph [ref=f4e48]:
+          - text: Já faz parte do time?
+          - button "Faça Login" [ref=f4e49] [cursor=pointer]
+  - region "Notifications alt+T"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useMemo, useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Todo } from '../components/Todo';
 import { FilterButton } from '../components/FilterButton';
 import { Form } from '../components/Form';
@@ -94,14 +94,14 @@ export function TodoPage() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/activities')}
+              onClick={() => navigate({ to: '/activities', viewTransition: true })}
               title="Histórico de atividades"
               className="h-11 w-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
             >
               <ActivityIcon className="h-5 w-5" />
             </button>
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate({ to: '/profile', viewTransition: true })}
               title="Meu perfil"
               className="h-11 w-11 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-bold text-[1.4rem] shadow-lg shadow-emerald-900/30 hover:scale-105 active:scale-95 transition-transform cursor-pointer select-none"
             >
@@ -151,7 +151,7 @@ export function TodoPage() {
                 <div className="flex justify-center mt-6">
                   <Button
                     variant="link"
-                    onClick={() => navigate('/archive')}
+                    onClick={() => navigate({ to: '/archive', viewTransition: true })}
                     className="text-white/40 hover:text-white/80 transition-colors"
                   >
                     Ver histórico de concluídas

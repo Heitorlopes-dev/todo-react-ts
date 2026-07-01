@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { getUserActivities, clearUserActivities, type ActivityLog } from '@/services/activity-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -105,7 +105,10 @@ export function ActivityPage() {
 
   useEffect(() => {
     async function loadActivities() {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setLoading(false);
+        return;
+      }
       
       try {
         const data = await getUserActivities(user.uid);
@@ -131,7 +134,7 @@ export function ActivityPage() {
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate('/')}
+                onClick={() => navigate({ to: '/', viewTransition: true })}
                 className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white cursor-pointer p-0"
               >
                 <ArrowLeft className="h-5 w-5" />

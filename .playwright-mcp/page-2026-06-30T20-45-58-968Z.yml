@@ -1,0 +1,52 @@
+- generic [ref=f6e2]:
+  - generic [ref=f6e3]:
+    - generic [ref=f6e4]:
+      - img "Agronorte – campo" [ref=f6e6]
+      - generic [ref=f6e8]:
+        - heading "Organize seu dia. Conquiste seus objetivos." [level=2] [ref=f6e10]:
+          - text: Organize seu dia.
+          - text: Conquiste seus objetivos.
+        - paragraph [ref=f6e11]: A plataforma definitiva para manter suas tarefas rurais e urbanas sob controle total.
+    - generic [ref=f6e13]:
+      - generic [ref=f6e14]:
+        - img [ref=f6e16]
+        - generic [ref=f6e18]:
+          - generic [ref=f6e19]: Lista de Tarefas
+          - generic [ref=f6e20]: Agronorte
+      - generic [ref=f6e21]:
+        - generic [ref=f6e22]:
+          - heading "Bem-vindo(a) de volta" [level=1] [ref=f6e23]
+          - paragraph [ref=f6e24]: Insira seus dados para acessar o sistema.
+        - button "Continuar com o Google" [ref=f6e25] [cursor=pointer]:
+          - img [ref=f6e26]
+          - generic [ref=f6e31]: Continuar com o Google
+        - generic [ref=f6e34]: ou
+        - generic [ref=f6e36]:
+          - generic [ref=f6e37]:
+            - text: E-mail
+            - generic [ref=f6e38]:
+              - img
+              - textbox "E-mail" [ref=f6e39]:
+                - /placeholder: voce@exemplo.com
+                - text: heitordemelo19@gmail.com
+          - generic [ref=f6e40]:
+            - text: Senha
+            - generic [ref=f6e41]:
+              - img
+              - textbox "Senha" [ref=f6e42]:
+                - /placeholder: Sua senha secreta
+                - text: "1234567"
+              - button "Mostrar senha" [ref=f6e43] [cursor=pointer]:
+                - img [ref=f6e44]
+            - button "Esqueceu a senha?" [ref=f6e48] [cursor=pointer]
+          - button "Entrar na Plataforma" [ref=f6e49] [cursor=pointer]:
+            - text: Entrar na Plataforma
+            - img
+        - paragraph [ref=f6e50]:
+          - text: Ainda não tem uma conta?
+          - button "Cadastre-se" [ref=f6e51] [cursor=pointer]
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=f6e52]:
+        - img [ref=f6e54]
+        - generic [ref=f6e59]: Email ou senha incorretos.

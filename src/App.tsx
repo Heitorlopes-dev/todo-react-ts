@@ -1,68 +1,31 @@
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { LoginPage } from './pages/LoginPage';
-import { TodoPage } from './pages/TodoPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { ActivityPage } from './pages/ActivityPage';
-import { AdminPage } from './pages/AdminPage';
-import { ArchivePage } from './pages/ArchivePage';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { AdminRoute } from './components/AdminRoute';
-import { Toaster } from './components/ui/sonner';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+import { useAuth } from './hooks/useAuth';
+import { useEffect } from 'react';
+
+// Set up a Router instance
+const router = createRouter({
+  routeTree,
+  defaultPreload: 'intent',
+  basepath: import.meta.env.BASE_URL,
+  context: {
+    auth: undefined!, // This will be provided by an inner component
+  },
+});
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 export function App() {
-  return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <TodoPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/activities"
-              element={
-                <ProtectedRoute>
-                  <ActivityPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/archive"
-              element={
-                <ProtectedRoute>
-                  <ArchivePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminPage />
-                </AdminRoute>
-              }
-            />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          <Toaster />
-        </Router>
-      </AuthProvider>
-    </ErrorBoundary>
-  );
+  const auth = useAuth();
+
+  useEffect(() => {
+    router.invalidate();
+  }, [auth.user, auth.loading]);
+
+  return <RouterProvider router={router} context={{ auth }} />;
 }

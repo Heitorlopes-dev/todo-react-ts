@@ -1,5 +1,16 @@
 {
   "projects": {
     "default": "todo-ts-heitor-2026"
+  },
+  "mcpServers": {
+    "firebase-mcp-server": {
+      "command": "/home/agronorte/.bun/bin/firebase",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "NODE_NO_WARNINGS": "1"
+      }
+    }
   }
 }

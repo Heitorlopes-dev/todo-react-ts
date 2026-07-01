@@ -18,11 +18,15 @@ service cloud.firestore {
       
       // Permitir criação se o usuário for o dono e a role inserida for apenas 'user' (ou omitida)
       allow create: if isOwner(userId) 
-        && (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role == 'user');
+        && (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role == 'user')
+        && (!request.resource.data.keys().hasAny(['email']) || (request.resource.data.email is string && request.resource.data.email.size() <= 254))
+        && (!request.resource.data.keys().hasAny(['displayName']) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 150));
       
       // Permitir atualização apenas se o usuário for o dono e NÃO tentar alterar a 'role'
       // Administradores podem atualizar tudo
       allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+                    && (!request.resource.data.keys().hasAny(['email']) || (request.resource.data.email is string && request.resource.data.email.size() <= 254))
+                    && (!request.resource.data.keys().hasAny(['displayName']) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 150))
                     || isAdmin();
                     
       allow delete: if isOwner(userId) || isAdmin();

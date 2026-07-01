@@ -3,6 +3,12 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+declare global {
+  interface Document {
+    startViewTransition?: (callback: () => void) => { finished: Promise<void> };
+  }
+}
+
 type TodoProps = {
   id: string;
   name: string;
@@ -45,13 +51,27 @@ export const Todo = memo(function Todo(props: TodoProps) {
   );
 
   const handleStartEdit = useCallback(() => {
-    setNewName(name);
-    setEditing(true);
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        setNewName(name);
+        setEditing(true);
+      });
+    } else {
+      setNewName(name);
+      setEditing(true);
+    }
   }, [name]);
 
   const handleCancelEdit = useCallback(() => {
-    setNewName(name);
-    setEditing(false);
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        setNewName(name);
+        setEditing(false);
+      });
+    } else {
+      setNewName(name);
+      setEditing(false);
+    }
   }, [name]);
 
   const handleToggle = useCallback(() => {
