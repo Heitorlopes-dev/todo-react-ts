@@ -12,6 +12,10 @@ export function DisplayNameForm() {
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    setDisplayName(user?.displayName ?? '');
+  }, [user?.displayName]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = displayName.trim();

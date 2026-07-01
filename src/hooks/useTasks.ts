@@ -111,53 +111,49 @@ export function useTasks(userId: string | undefined) {
   );
 
   const deleteTask = useCallback(
-    async (id: string) => {
+    async (id: string, taskName: string) => {
       if (!userId) return;
-      const task = tasks.find((t) => t.id === id);
       try {
-        await removeTask(userId, id, task?.name);
+        await removeTask(userId, id, taskName);
         toast.success('Tarefa excluída!');
       } catch (error) {
         console.error('Erro ao remover tarefa:', error);
         toast.error('Erro ao excluir tarefa.');
       }
     },
-    [userId, tasks],
+    [userId],
   );
 
   const editTask = useCallback(
-    async (id: string, newName: string) => {
+    async (id: string, newName: string, oldName: string) => {
       if (!userId) return;
       const trimmedName = newName.trim();
       if (!trimmedName) return;
-      const task = tasks.find((t) => t.id === id);
       try {
-        await renameTask(userId, id, trimmedName, task?.name);
+        await renameTask(userId, id, trimmedName, oldName);
         toast.success('Tarefa renomeada!');
       } catch (error) {
         console.error('Erro ao editar tarefa:', error);
         toast.error('Erro ao salvar alteração.');
       }
     },
-    [userId, tasks],
+    [userId],
   );
 
   const toggleTask = useCallback(
-    async (id: string) => {
+    async (id: string, taskName: string, completed: boolean) => {
       if (!userId) return;
-      const task = tasks.find((t) => t.id === id);
-      if (!task) return;
       try {
-        await toggleTaskService(userId, id, task.completed, task.name);
+        await toggleTaskService(userId, id, completed, taskName);
         toast.success(
-          task.completed ? 'Tarefa marcada como ativa' : 'Tarefa concluída com sucesso!',
+          completed ? 'Tarefa concluída com sucesso!' : 'Tarefa marcada como ativa',
         );
       } catch (error) {
         console.error('Erro ao atualizar status da tarefa:', error);
         toast.error('Erro ao alterar status da tarefa.');
       }
     },
-    [userId, tasks],
+    [userId],
   );
 
   return { tasks, loading, addTask, deleteTask, editTask, toggleTask };

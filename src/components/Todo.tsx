@@ -13,9 +13,9 @@ type TodoProps = {
   id: string;
   name: string;
   completed: boolean;
-  toggleTaskCompleted: (id: string) => void;
-  deleteTask: (id: string) => void;
-  editTask: (id: string, newName: string) => void;
+  toggleTaskCompleted: (id: string, name: string, completed: boolean) => void;
+  deleteTask: (id: string, name: string) => void;
+  editTask: (id: string, newName: string, oldName: string) => void;
 };
 
 export const Todo = memo(function Todo(props: TodoProps) {
@@ -44,10 +44,10 @@ export const Todo = memo(function Todo(props: TodoProps) {
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!newName.trim()) return;
-      editTask(id, newName);
+      editTask(id, newName, name);
       setEditing(false);
     },
-    [newName, editTask, id],
+    [newName, editTask, id, name],
   );
 
   const handleStartEdit = useCallback(() => {
@@ -75,12 +75,12 @@ export const Todo = memo(function Todo(props: TodoProps) {
   }, [name]);
 
   const handleToggle = useCallback(() => {
-    toggleTaskCompleted(id);
-  }, [toggleTaskCompleted, id]);
+    toggleTaskCompleted(id, name, completed);
+  }, [toggleTaskCompleted, id, name, completed]);
 
   const handleDelete = useCallback(() => {
-    deleteTask(id);
-  }, [deleteTask, id]);
+    deleteTask(id, name);
+  }, [deleteTask, id, name]);
 
   const editingTemplate = (
     <form className="space-y-4 w-full" onSubmit={handleSubmit}>
