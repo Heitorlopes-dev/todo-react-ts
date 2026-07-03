@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { ProfilePage } from '../pages/ProfilePage';
+import { EmailVerificationGate } from '../components/EmailVerificationGate';
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context }) => {
@@ -10,6 +11,10 @@ export const Route = createFileRoute('/profile')({
   component: function ProfileRoute() {
     const { auth } = Route.useRouteContext();
     if (auth.loading) return <div className="flex h-screen w-full items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-    return <ProfilePage />;
+    return (
+      <EmailVerificationGate>
+        <ProfilePage />
+      </EmailVerificationGate>
+    );
   },
 });

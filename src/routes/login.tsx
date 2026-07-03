@@ -3,8 +3,8 @@ import { LoginPage } from '../pages/LoginPage';
 
 export const Route = createFileRoute('/login')({
   beforeLoad: ({ context }) => {
-    // Se já estiver logado, redireciona pra home
-    if (!context.auth.loading && context.auth.user) {
+    // Só redireciona pra home se estiver logado E com email verificado
+    if (!context.auth.loading && context.auth.user && context.auth.user.emailVerified) {
       throw redirect({ to: '/' });
     }
   },
