@@ -7,6 +7,19 @@
     <title>Lista de Tarefas — Agronorte</title>
     <meta name="description" content="Organize suas tarefas diárias com a Lista de Tarefas Agronorte." />
     <meta name="theme-color" content="#0f1f18" />
+    <!-- GitHub Pages SPA redirect handler -->
+    <script>
+      (function(l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search.slice(1).split('&').map(function(s) {
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
     <script type="module" crossorigin src="/todo-react-ts/assets/index-Bd-d7_dd.js"></script>
     <link rel="stylesheet" crossorigin href="/todo-react-ts/assets/index-CzEtv-Kn.css">
   </head>
